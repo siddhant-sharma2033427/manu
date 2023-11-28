@@ -1,0 +1,82 @@
+[
+    {
+        "name":"Refrigerator", 
+        "id":1
+    },
+    {
+        "name":"Mixer Grinder",
+        "id":2
+    },{
+        "name":"Room Cooler",
+        "id":3
+    },{
+        "name":"Water Filter",
+        "id":4
+    },{
+        "name":"Oven",
+        "id":5
+    },{
+        "name":"Washing Machine",
+        "id":6
+    },{
+        "name":"Hair Dryer",
+        "id":7
+    },{
+        "name":"TV",
+        "id":8
+    },{
+        "name":"AC",
+        "id":9
+    },{
+        "name":"Fan",
+        "id":10
+    },{
+        "name":"Induction",
+        "id":11
+    },{
+        "name":"Geyser",
+        "id":12
+    },{
+        "name":"Room Heater",
+        "id":13
+    },{
+        "name":"Phonne",
+        "id":14
+    },{
+        "nanme":"Tablet",
+        "id":15
+    },{
+        "name":"Kettle",
+        "id":16
+    },{
+        "name":"Extension Board",
+        "id":17
+    },{
+        "name":"Switch Board",
+        "id":18
+    },{
+        "name":"Trimmer",
+        "id":19
+    },{
+        "name":"Printer",
+        "id":20
+    },{
+        "name":"Scanner",
+        "id":30
+    },{
+        "name":"Chimney",
+        "id":31
+    },{
+        "name":"Audio System",
+        "id":32
+    },{
+        "name":"Headphone",
+        "id":33
+    },{
+        "name":"Laptop",
+        "id":34
+    },{
+        "name":"Bluetooth Device",
+        "id":35
+    }
+]
