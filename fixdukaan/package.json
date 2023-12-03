@@ -28,7 +28,7 @@
   },
   "scripts": {
     "start": "react-scripts --openssl-legacy-provider start",
-    "build": "npm i --legacy-peer-deps",
+    "build": "react-scripts build",
     "install": "npm install --legacy-peer-deps"
     
   },
