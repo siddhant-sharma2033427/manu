@@ -1,4 +1,4 @@
-import * as React from 'react';
+import  React,{useEffect,useContext,useState} from 'react';
 import { styled, useTheme } from '@mui/material/styles';
 import Box from '@mui/material/Box';
 import MuiDrawer from '@mui/material/Drawer';
@@ -17,6 +17,11 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import InboxIcon from '@mui/icons-material/MoveToInbox';
 import MailIcon from '@mui/icons-material/Mail';
+import {Add,Inventory} from '@mui/icons-material';
+// import { HashLink as Link } from 'react-router-hash-link';
+import { useNavigate } from 'react-router-dom';
+import {getOrders} from '../../service/api'
+import userContext from '../../context/user/userContext';
 
 const drawerWidth = 240;
 
@@ -86,7 +91,11 @@ const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== 'open' 
 );
 
 export default function MiniDrawer() {
+    const usercontext = useContext(userContext)
+    const {userId} = usercontext;
+    const navigate = useNavigate();
     const theme = useTheme();
+    const [Orders,setOrders] = useState([])
     const [open, setOpen] = React.useState(false);
 
     const handleDrawerOpen = () => {
@@ -96,11 +105,19 @@ export default function MiniDrawer() {
     const handleDrawerClose = () => {
         setOpen(false);
     };
-
+    const handleHome = (e)=>{
+        navigate('/');
+    }
+    // useEffect(()=>{
+    //     const Orders = async ()=>{
+    //         const orders = await getOrders(userId);
+    //         console.log(orders)
+    //     }
+    // })
     return (
         <Box sx={{ display: 'flex' }}>
             <CssBaseline />
-            <AppBar position="fixed" open={open}>
+            <AppBar position="fixed" open={open} sx={{backgroundColor:"#ff6017"}}>
                 <Toolbar>
                     <IconButton
                         color="inherit"
@@ -114,8 +131,8 @@ export default function MiniDrawer() {
                     >
                         <MenuIcon />
                     </IconButton>
-                    <Typography variant="h6" noWrap component="div">
-                        Mini variant drawer
+                    <Typography variant="h6" noWrap component="div" onClick={handleHome} style={{cursor:"pointer"}}>
+                        Fixdukaan
                     </Typography>
                 </Toolbar>
             </AppBar>
@@ -125,7 +142,7 @@ export default function MiniDrawer() {
                         {theme.direction === 'rtl' ? <ChevronRightIcon /> : <ChevronLeftIcon />}
                     </IconButton>
                 </DrawerHeader>
-                <List>
+                <List sx={{display:"flex",flexFlow: "column"}}>
                     {['Inbox', 'Starred', 'Send email', 'Drafts'].map((text, index) => (
                         <ListItem key={text} disablePadding sx={{ display: 'block' }}>
                             <ListItemButton
@@ -135,43 +152,21 @@ export default function MiniDrawer() {
                                     px: 2.5,
                                 }}
                             >
-                                <ListItemIcon
+                                <Inventory
                                     sx={{
                                         minWidth: 0,
                                         mr: open ? 3 : 'auto',
                                         justifyContent: 'center',
+                                        color:"#ff6017"
                                     }}
                                 >
                                     {index % 2 === 0 ? <InboxIcon /> : <MailIcon />}
-                                </ListItemIcon>
+                                </Inventory>
                                 <ListItemText primary={text} sx={{ opacity: open ? 1 : 0 }} />
                             </ListItemButton>
                         </ListItem>
                     ))}
-                </List>
-                <List>
-                    {['All mail', 'Trash', 'Spam'].map((text, index) => (
-                        <ListItem key={text} disablePadding sx={{ display: 'block' }}>
-                            <ListItemButton
-                                sx={{
-                                    minHeight: 48,
-                                    justifyContent: open ? 'initial' : 'center',
-                                    px: 2.5,
-                                }}
-                            >
-                                <ListItemIcon
-                                    sx={{
-                                        minWidth: 0,
-                                        mr: open ? 3 : 'auto',
-                                        justifyContent: 'center',
-                                    }}
-                                >
-                                    {index % 2 === 0 ? <InboxIcon /> : <MailIcon />}
-                                </ListItemIcon>
-                                <ListItemText primary={text} sx={{ opacity: open ? 1 : 0 }} />
-                            </ListItemButton>
-                        </ListItem>
-                    ))}
+                    <Add sx={{margin:"auto",color:"#ff6017",cursor:"pointer"}}/> 
                 </List>
             </Drawer>
             <Box component="main" sx={{ flexGrow: 1, p: 3 }}>

@@ -53,14 +53,15 @@ export const addUser = async (req, res) => {
 
 export const getUser = async (req, res) => {
     try {
+        // console.log("usercontroller",req.body)
         const user = await User.findOne({ Phone_Number: req.body.Phone_Number });
         if(!user){
-            return res.status(400).json({error:"please enter correct credentials"});
+            return res.status(400).json({error:"please enter correct credentials", "authtoken":false,"userId":false,"success":false});
         }
         // return res.status(200).json(user);
         const PassComp = await bcrypt.compare(req.body.Password,user.Password);
         if(!PassComp){
-            return res.status(400).json({error:"please enter correct credentials"});
+            return res.status(400).json({error:"please enter correct credentials", "authtoken":false,"userId":false,"success":false});
         }
         const data = {
             user:{
@@ -68,9 +69,11 @@ export const getUser = async (req, res) => {
             }
         }
         const authtoken = jwt.sign(data,JWT_SEC)
-        res.status(200).json({"authtoken":authtoken});
+        console.log("success");
+        res.status(200).json({"authtoken":authtoken,"userId":user.id,"success":true});
     } catch (error) {
-        return res.status(500).json({ msg: 'error while fatching user getUser user-controller' });
+        console.log(error)
+        return res.status(500).json({ msg: 'error while fatching user getUser user-controller', "authtoken":false,"userId":false,"success":false});
     }
 }
 

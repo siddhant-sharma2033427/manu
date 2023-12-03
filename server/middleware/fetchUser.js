@@ -3,6 +3,7 @@ const JWT_SEC = "ss11666665@123"
 const fetchUser = (req, res, next) => {
     //get the user jwt token and appent user id
     const token = req.header('auth-token');
+    console.log(token)
     if (!token) {
         res.status(401).send({ error: "please authenticate using valid token" });
     }

@@ -1,9 +1,10 @@
 import styled from '@emotion/styled'
 import { Box, Typography, Button } from '@mui/material'
-import React from 'react'
+import React,{useContext} from 'react'
 import { MobileFriendly, LocalShipping, Inventory } from '@mui/icons-material';
 import { HashLink as Link } from 'react-router-hash-link';
 import { useNavigate } from 'react-router-dom';
+import UserContext from '../../context/user/userContext'
 // import banner from './image/banner.jpg'
 const Image = styled('img')({
   width: "550px",
@@ -53,6 +54,17 @@ border-radius: 25px;
 `
 const Banner = () => {
   const navigation = useNavigate();
+  const usercontext = useContext(UserContext);
+  const {found,userId} = usercontext;
+  const handleGetStarted = (e)=>{
+    console.log("pressed")
+    if(found || userId){
+      console.log("found it");
+      navigation('/user');
+    }else{
+      navigation('/login');
+    }
+  }
   return (
     <>
       <Container>
@@ -74,7 +86,8 @@ const Banner = () => {
             </Box>
           </IconContainer>
           {/* <GetStartButton variant="contained" onClick={()=>navigation('/signup')}><Link to="/signup" style={{textDecoration:"none"}}>Get Started</Link></GetStartButton> */}
-          <GetStartButton variant="contained" onClick={()=>navigation('/signup')}>Get Started</GetStartButton>
+          <GetStartButton variant="contained" onClick={handleGetStarted}>{found || userId?"Book Now":"Get Started"}</GetStartButton>
+          {/* //book now */}
         </Textbox>
         <Imgcontainer>
           <Image src={require('./image/repairman3.png')} />

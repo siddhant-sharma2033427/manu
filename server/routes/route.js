@@ -1,6 +1,6 @@
 import express from 'express'
 import {addUser,getUser,userDetails} from '../controller/user-controller.js'
-import {placeOrder,getOrders} from '../controller/order-controller.js'
+import {placeOrder,getOrders,deleteOrder,updateOrder,updateStatus} from '../controller/order-controller.js'
 import {addProduct,getAllProducts} from '../controller/product-controller.js'
 import {body} from "express-validator"
 import fetchUser from "../middleware/fetchUser.js"
@@ -17,13 +17,16 @@ route.post('/signup',[
     body('Email',"email required").exists(),
     body('Password',"passowrd required").matches(/^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[!@#$%^&*()-_+=<>?]).{8,}$/)
 ],addUser);
-route.get('/login',getUser);
-route.post('/getUser',fetchUser,userDetails);
+route.post('/login',getUser);
+route.get('/getUser',fetchUser,userDetails);
 
 
 //order routes
 route.post('/user/Order',placeOrder);
 route.get('/user/getOrder/:userId',getOrders);
+route.get('/user/deleteOrder',deleteOrder);
+route.put('/user/updateOrder',updateOrder);
+route.put('/user/updateStatus',updateStatus);
 
 
 

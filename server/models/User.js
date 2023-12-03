@@ -43,7 +43,7 @@ const userSchema = new mongoose.Schema({
     },
     Type:{
         type:String,
-        required:true
+        enum : ['Customer','Shopeowner']
     },
     Orders:{ 
         type: mongoose.Schema.Types.ObjectId,
