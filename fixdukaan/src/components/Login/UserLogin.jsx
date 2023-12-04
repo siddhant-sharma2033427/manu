@@ -90,8 +90,10 @@ const UserLogin = () => {
             const { success,authtoken,userId } = result.data;
 
             if (success) {
+                console.log("login",userId,authtoken);
                 setUserJWT(authtoken)
                 setUserId(userId)
+                sessionStorage.setItem('fixdukaan-jwt-token',authtoken);
                 if(Rememberme === true){
 
                     localStorage.setItem('fixdukaan-jwt-token',authtoken);

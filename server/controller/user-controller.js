@@ -12,7 +12,7 @@ export const addUser = async (req, res) => {
         return res.status(400).json({ errors: errors.array() })
     } else {
         try {
-            console.log("user controller",req.body);
+            // console.log("user controller",req.body);
             let exist = await User.findOne({ Phone_Number: req.body.Phone_Number });
             if (exist) {
                 return res.status(200).json({ msg: 'user already exists' });
@@ -69,7 +69,7 @@ export const getUser = async (req, res) => {
             }
         }
         const authtoken = jwt.sign(data,JWT_SEC)
-        console.log("success");
+        // console.log("success");
         res.status(200).json({"authtoken":authtoken,"userId":user.id,"success":true});
     } catch (error) {
         console.log(error)

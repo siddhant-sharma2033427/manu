@@ -1,4 +1,4 @@
-import  React,{useEffect,useContext,useState} from 'react';
+import React, { useEffect, useContext, useState } from 'react';
 import { styled, useTheme } from '@mui/material/styles';
 import Box from '@mui/material/Box';
 import MuiDrawer from '@mui/material/Drawer';
@@ -13,15 +13,17 @@ import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import ListItem from '@mui/material/ListItem';
 import ListItemButton from '@mui/material/ListItemButton';
-import ListItemIcon from '@mui/material/ListItemIcon';
+// import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import InboxIcon from '@mui/icons-material/MoveToInbox';
 import MailIcon from '@mui/icons-material/Mail';
-import {Add,Inventory} from '@mui/icons-material';
+import { Add, Inventory } from '@mui/icons-material';
 // import { HashLink as Link } from 'react-router-hash-link';
 import { useNavigate } from 'react-router-dom';
-import {getOrders} from '../../service/api'
+import { getOrders, userDetails, getProductDetails } from '../../service/api'
 import userContext from '../../context/user/userContext';
+import ProductInfo from './ProductInfo';
+import PlaceOrder from './PlaceOrder';
 
 const drawerWidth = 240;
 
@@ -91,12 +93,15 @@ const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== 'open' 
 );
 
 export default function MiniDrawer() {
-    const usercontext = useContext(userContext)
-    const {userId} = usercontext;
+    const [OrderUpdate,setOrderUpdate] = useState(false);
     const navigate = useNavigate();
     const theme = useTheme();
-    const [Orders,setOrders] = useState([])
+    const [Orders, setOrders] = useState([{ product: "", quantity: 0, status: "", totalprice: 0, productName: "" }]);
     const [open, setOpen] = React.useState(false);
+    const [selectedOrder, setSelectedOrder] = useState(null);
+    const [isNewOrder, setIsNewOrder] = useState(false);
+    const [lggedUserDetails,setloggedUserDetails] = useState(null) 
+    
 
     const handleDrawerOpen = () => {
         setOpen(true);
@@ -105,19 +110,70 @@ export default function MiniDrawer() {
     const handleDrawerClose = () => {
         setOpen(false);
     };
-    const handleHome = (e)=>{
+    const handleHome = (e) => {
         navigate('/');
-    }
-    // useEffect(()=>{
-    //     const Orders = async ()=>{
-    //         const orders = await getOrders(userId);
-    //         console.log(orders)
-    //     }
-    // })
+    };
+    useEffect(() => {
+        const fetchUserOrders = async () => {
+            try {
+                setOrderUpdate(false)
+                const sessionjwt = sessionStorage.getItem('fixdukaan-jwt-token');
+                if (sessionjwt) {
+                    const getuserdetails = await userDetails(sessionjwt);
+                    setloggedUserDetails(getuserdetails.data);
+                    console.log(getuserdetails.data)
+
+                    const userorders = await getOrders(getuserdetails.data._id);
+                    // Map over userorders.data to extract products
+                    const ordersData = userorders.data.map((order) => order.products);
+                    // Flatten the array of arrays into a single array
+                    const flattenedProducts = [].concat(...ordersData);
+                    // Use Promise.all to wait for all promises to resolve
+                    const updatedOrders = await Promise.all(
+                        flattenedProducts.map(async (item) => {
+                            let productname = await getProductDetails({ "Id": item.product });
+                            return {
+                                product: item.product,
+                                quantity: item.quantity,
+                                status: item.status,
+                                totalprice: item.totalPrice,
+                                productName: productname.data.data.productName
+                            };
+                        })
+                    );
+                    // Set the state with the updatedOrders array
+                    setOrders(updatedOrders);
+                    console.log(Orders);
+                }
+            } catch (error) {
+                console.error("Error fetching user details or orders", error);
+            }
+        };
+
+        fetchUserOrders();
+    }, [OrderUpdate]); // Removed the dependency on setOrders
+
+    // Log the Orders state when it changes
+    useEffect(() => {
+        console.log("Orders:", Orders);
+    }, [Orders]);
+
+    // Include setOrders as a dependency to avoid lint warnings
+    const handleInventoryClick = (order) => {
+        setSelectedOrder(order);
+        setIsNewOrder(false);
+    };
+
+    const handleAddOrderClick = () => {
+        setSelectedOrder(null);
+        setIsNewOrder(true);
+    };
+    
+
     return (
         <Box sx={{ display: 'flex' }}>
             <CssBaseline />
-            <AppBar position="fixed" open={open} sx={{backgroundColor:"#ff6017"}}>
+            <AppBar position="fixed" open={open} sx={{ backgroundColor: "#ff6017" }}>
                 <Toolbar>
                     <IconButton
                         color="inherit"
@@ -131,7 +187,7 @@ export default function MiniDrawer() {
                     >
                         <MenuIcon />
                     </IconButton>
-                    <Typography variant="h6" noWrap component="div" onClick={handleHome} style={{cursor:"pointer"}}>
+                    <Typography variant="h6" noWrap component="div" onClick={handleHome} style={{ cursor: "pointer" }}>
                         Fixdukaan
                     </Typography>
                 </Toolbar>
@@ -142,62 +198,50 @@ export default function MiniDrawer() {
                         {theme.direction === 'rtl' ? <ChevronRightIcon /> : <ChevronLeftIcon />}
                     </IconButton>
                 </DrawerHeader>
-                <List sx={{display:"flex",flexFlow: "column"}}>
-                    {['Inbox', 'Starred', 'Send email', 'Drafts'].map((text, index) => (
-                        <ListItem key={text} disablePadding sx={{ display: 'block' }}>
+                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: '5px', paddingTop: 2 }}>
+                    <Add sx={{ color: "#ff6017", cursor: "pointer" }} onClick={handleAddOrderClick} />
+
+                </Box>
+                <List sx={{ display: "flex", flexFlow: "column" }}>
+
+                    {Orders.map((order) => (
+                        <ListItem key={order.id} disablePadding sx={{ display: 'block' }}>
                             <ListItemButton
                                 sx={{
                                     minHeight: 48,
-                                    justifyContent: open ? 'initial' : 'center',
+                                    justifyContent: 'center',
                                     px: 2.5,
                                 }}
+                                onClick={() => handleInventoryClick(order)}
                             >
                                 <Inventory
                                     sx={{
                                         minWidth: 0,
-                                        mr: open ? 3 : 'auto',
+                                        mr: 3,
                                         justifyContent: 'center',
-                                        color:"#ff6017"
+                                        color: order.status === 'Pending' ? "#ff6017" : order.status === 'Shipped' ? '#0077cc' : order.status === 'Delivered' ? '#00b050' : order.status === 'Returned' ? '#ffa07a' : order.status === 'Request Cancell' ? '#f39c12' : order.status === 'Cancelled' ? '#ff8c00' : '#ff6017', // Set color based on status
+                                        margin: "auto"
                                     }}
                                 >
-                                    {index % 2 === 0 ? <InboxIcon /> : <MailIcon />}
+                                    {order.status === 'Pending' ? <InboxIcon /> : <MailIcon />}
                                 </Inventory>
-                                <ListItemText primary={text} sx={{ opacity: open ? 1 : 0 }} />
+                                <ListItemText primary={open ? `${order.productName} ` : ""} />
                             </ListItemButton>
                         </ListItem>
                     ))}
-                    <Add sx={{margin:"auto",color:"#ff6017",cursor:"pointer"}}/> 
+                    <ListItem disablePadding sx={{ display: 'block', justifyContent: 'center' }}>
+                        <ListItemButton sx={{ minHeight: 48 }}>
+
+                        </ListItemButton>
+                    </ListItem>
                 </List>
             </Drawer>
             <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
                 <DrawerHeader />
-                <Typography paragraph>
-                    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
-                    tempor incididunt ut labore et dolore magna aliqua. Rhoncus dolor purus non
-                    enim praesent elementum facilisis leo vel. Risus at ultrices mi tempus
-                    imperdiet. Semper risus in hendrerit gravida rutrum quisque non tellus.
-                    Convallis convallis tellus id interdum velit laoreet id donec ultrices.
-                    Odio morbi quis commodo odio aenean sed adipiscing. Amet nisl suscipit
-                    adipiscing bibendum est ultricies integer quis. Cursus euismod quis viverra
-                    nibh cras. Metus vulputate eu scelerisque felis imperdiet proin fermentum
-                    leo. Mauris commodo quis imperdiet massa tincidunt. Cras tincidunt lobortis
-                    feugiat vivamus at augue. At augue eget arcu dictum varius duis at
-                    consectetur lorem. Velit sed ullamcorper morbi tincidunt. Lorem donec massa
-                    sapien faucibus et molestie ac.
-                </Typography>
-                <Typography paragraph>
-                    Consequat mauris nunc congue nisi vitae suscipit. Fringilla est ullamcorper
-                    eget nulla facilisi etiam dignissim diam. Pulvinar elementum integer enim
-                    neque volutpat ac tincidunt. Ornare suspendisse sed nisi lacus sed viverra
-                    tellus. Purus sit amet volutpat consequat mauris. Elementum eu facilisis
-                    sed odio morbi. Euismod lacinia at quis risus sed vulputate odio. Morbi
-                    tincidunt ornare massa eget egestas purus viverra accumsan in. In hendrerit
-                    gravida rutrum quisque non tellus orci ac. Pellentesque nec nam aliquam sem
-                    et tortor. Habitant morbi tristique senectus et. Adipiscing elit duis
-                    tristique sollicitudin nibh sit. Ornare aenean euismod elementum nisi quis
-                    eleifend. Commodo viverra maecenas accumsan lacus vel facilisis. Nulla
-                    posuere sollicitudin aliquam ultrices sagittis orci a.
-                </Typography>
+                <Box sx={{ display: "flex" }}>
+                    {selectedOrder && <ProductInfo Orders={selectedOrder} />}
+                    {isNewOrder && <PlaceOrder props = {lggedUserDetails} OrderUpdate ={setOrderUpdate} setOrderUpdate={setOrderUpdate}/>}
+                </Box>
             </Box>
         </Box>
     );

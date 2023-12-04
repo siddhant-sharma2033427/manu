@@ -16,23 +16,23 @@ const orderSchema = new mongoose.Schema({
             },
             quantity: {
                 type: Number,
-                default:1
+                default: 1
             },
             status: {
                 type: String,
-                enum: ['Pending', 'Shipped', 'Delivered','Returned','Request Cancell', 'Cancelled'], // Example status values, customize as needed
+                enum: ['Pending', 'Shipped', 'Delivered', 'Returned', 'Request Cancell', 'Cancelled'], // Example status values, customize as needed
                 default: 'Pending',
             },
+            totalPrice: {
+                type: Number,
+                default: 0
+            },
+            orderDate: {
+                type: Date,
+                default: Date.now,
+            },
         },
-    ],
-    totalPrice: {
-        type: Number,
-        default:0
-    },
-    orderDate: {
-        type: Date,
-        default: Date.now,
-    },
+    ]
     // Add more fields as needed for your specific use case
 });
 

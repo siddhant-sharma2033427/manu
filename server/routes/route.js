@@ -1,7 +1,7 @@
 import express from 'express'
 import {addUser,getUser,userDetails} from '../controller/user-controller.js'
-import {placeOrder,getOrders,deleteOrder,updateOrder,updateStatus} from '../controller/order-controller.js'
-import {addProduct,getAllProducts} from '../controller/product-controller.js'
+import {placeOrder,getOrders,deleteOrder,updateOrder,updateStatus,findUserOrders} from '../controller/order-controller.js'
+import {addProduct,getAllProducts,getProductDetails} from '../controller/product-controller.js'
 import {body} from "express-validator"
 import fetchUser from "../middleware/fetchUser.js"
 const route = express.Router();
@@ -27,11 +27,13 @@ route.get('/user/getOrder/:userId',getOrders);
 route.get('/user/deleteOrder',deleteOrder);
 route.put('/user/updateOrder',updateOrder);
 route.put('/user/updateStatus',updateStatus);
+route.post('/user/findUser',findUserOrders);
 
 
 
 //Product Routes
 route.post('/admin/product',addProduct);
 route.get('/product/products',getAllProducts);
+route.post('/produect/getProduct',getProductDetails)
 
 export default route

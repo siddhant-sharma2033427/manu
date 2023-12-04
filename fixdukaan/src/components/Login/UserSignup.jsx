@@ -1,5 +1,5 @@
 import styled from '@emotion/styled';
-import { Autocomplete, Box, TextField, Paper, InputAdornment, IconButton, Button, FormGroup, FormControlLabel, Checkbox, Typography } from '@mui/material';
+import { Autocomplete, Box, Stack, TextField, Paper, InputAdornment, IconButton, Button, FormGroup, FormControlLabel, Checkbox, Typography, Alert, AlertTitle } from '@mui/material';
 import lookup from 'country-code-lookup'
 import { Country, State, City } from 'country-state-city';
 import { useNavigate } from "react-router-dom";
@@ -70,9 +70,15 @@ flex-direction: column;
 justify-content: center;
 align-items: center;
 margin:20px;
-background-image:require(url("./images/loginbg.jpg"))
+
 
 `
+const AlertBox = styled(Box)`
+  width: 100%;
+  position: fixed;
+  z-index: 10000;
+  top:0px;
+`;
 
 const UserSignup = () => {
     const navigate = useNavigate();
@@ -98,6 +104,10 @@ const UserSignup = () => {
     const [Email, setEmail] = useState('')
     const [Zipcode, setZipcode] = useState('')
     const [uAddress, setAddress] = useState('')
+
+    const [alert, setAlert] = useState({ message: '', title: '', errorTitle: '' });
+    const [alertvisibility, setalertVisibility] = useState(false);
+
     const handleTogglePasswordVisibility = () => {
         setShowPassword(!showPassword);
     };
@@ -105,34 +115,54 @@ const UserSignup = () => {
         setShowcPassword(!showcPassword);
     };
     const handleButton = async () => {
-        const data = {
-            "First_name":Fname,
-            "Last_name":Lname,
-            "Phone_Number":Number(Phone),
-            // "Phone_Number":`${Phone,
-            "Email":Email,
-            "Country":selectedCountry,
-            "State":state,
-            "City":city,
-            "Zipcode":Number(Zipcode),
-            // "Zipcode":Zipcode,
-            "Address": uAddress,
-            "Password":password,
-            "Type":"Customer"
-          }
-        // console.log(Fname, Lname, Phone, Email, Zipcode, uAddress, password, city, state, selectedCountry);
-        try{
-        console.log(data);
-        const status = await addUser(data);
-        // await axios.post('http://localhost:8000/signup',JSON.stringify(data));
-        if(status.data.success){
-            navigate('/');
+        let missingValues = '';
+
+        // Check if all required values are present
+        if (!Fname) missingValues += 'First_name\n';
+        if (!Lname) missingValues += 'Last_name\n';
+        if (!Phone) missingValues += 'Phone_Number\n';
+        if (!Email) missingValues += 'Email\n';
+        if (!selectedCountry) missingValues += 'Country\n';
+        if (!state) missingValues += 'State\n';
+        if (!city) missingValues += 'City\n';
+        if (!Zipcode) missingValues += 'Zipcode\n';
+        if (!uAddress) missingValues += 'Address\n';
+        if (!password) missingValues += 'Password\n';
+
+        if (missingValues === '') {
+            const data = {
+                "First_name": Fname,
+                "Last_name": Lname,
+                "Phone_Number": Number(Phone),
+                "Email": Email,
+                "Country": selectedCountry,
+                "State": state,
+                "City": city,
+                "Zipcode": Number(Zipcode),
+                "Address": uAddress,
+                "Password": password,
+                "Type": "Customer"
+            };
+
+            try {
+                console.log(data);
+                const status = await addUser(data);
+
+                if (status.data.success) {
+                    navigate('/');
+                }
+                console.log(cityread);
+            } catch (error) {
+                console.log(error);
+            }
+        } else {
+            // Print in console the missing values
+            setAlert({ message: missingValues.trim(), title: 'error', errorTitle: "error" });
+            setalertVisibility(true);
         }
-        console.log(cityread)
-        }catch(error){
-            console.log(error);
-        }
-    }
+    };
+
+
     useEffect(() => {
         const getAllCountries = () => {
             const allCountries = Country.getAllCountries();
@@ -151,22 +181,56 @@ const UserSignup = () => {
             setRead(true)
         }
     }, [countryISO])
+
     useEffect(() => {
 
         if (stateISO) {
-            setCities(City.getCitiesOfState(countryISO, stateISO))
+            const temp = City.getCitiesOfState(countryISO, stateISO)
+            setCities(temp)
         }
     }, [stateISO])
+
+    useEffect(() => {
+        const timeout = setTimeout(() => {
+            setalertVisibility(false);
+        }, 3000);
+        return () => {
+            clearTimeout(timeout);
+        };
+
+    }, [alertvisibility]);
     return (
         <Container>
+            <AlertBox>
+                {alertvisibility && (
+                    <Stack sx={{ width: '100%' }}>
+                        <Alert variant="outlined" severity={alert.errorTitle} sx={{ backgroundColor: 'white', color: '#ff6017', width: '100%' }}>
+                            <AlertTitle>{alert.title}</AlertTitle>
+                            {alert.message}
+                        </Alert>
+                    </Stack>
+                )}
+            </AlertBox>
             <Logo>
-                <Link to="/" style={{textDecoration:"none"}}><TextLogo>Fixdukaan</TextLogo></Link>
+                <Link to="/" style={{ textDecoration: "none" }}><TextLogo>Fixdukaan</TextLogo></Link>
             </Logo>
             <Paper>
 
                 <Personal>
-                    <TextField id="F-Name" label="First Name" variant="outlined" onChange={(event) => { setFname(event.target.value) }} required sx={{ width: 150, height: 50, margin: '10px' }} />
-                    <TextField id="L-Name" label="Last Name" variant="outlined" onChange={(event) => { setLname(event.target.value) }} sx={{ width: 150, height: 50, margin: '10px' }} />
+                    <TextField id="F-Name"
+                        label="First Name"
+                        variant="outlined"
+                        onChange={(event) => { setFname(event.target.value) }}
+                        required 
+                        sx={{ width: 150, height: 50, margin: '10px' }}
+                        error={Fname===''?true:false}
+                    />
+                    <TextField id="L-Name"
+                        label="Last Name"
+                        variant="outlined"
+                        onChange={(event) => { setLname(event.target.value) }}
+                        sx={{ width: 150, height: 50, margin: '10px' }}
+                    />
                     <Textfield
                         required
                         id="filled-number"
@@ -174,6 +238,7 @@ const UserSignup = () => {
                         type="number"
                         sx={{ width: '100%', height: 50, margin: '10px' }}
                         onChange={(event) => { setPhone(event.target.value) }}
+                        error={Phone===''?true:false}
                     />
                     <Textfield
                         required
@@ -182,11 +247,13 @@ const UserSignup = () => {
                         type="email"
                         sx={{ width: '100%', height: 50, margin: '10px' }}
                         onChange={(event) => { setEmail(event.target.value) }}
+                        error={Email===''?true:false}
                     />
                 </Personal>
                 <Address>
 
                     <Autocomplete
+                        
                         id="country"
                         onChange={(event, newValue) => {
                             if (newValue) {
@@ -206,8 +273,9 @@ const UserSignup = () => {
                             </Box>
                         )}
                         renderInput={(params) =>
-                            <TextField {...params} label="select Country" style={{ backgroundColor: "white" }} required />
+                            <TextField {...params} label="select Country" style={{ backgroundColor: "white" }} required error={selectedCountry===null?true:false}/>
                         }
+                        
                     />
                     <Autocomplete
                         id="State"
@@ -220,9 +288,9 @@ const UserSignup = () => {
                                     if (state.name === newValue.name) {
                                         setstateISO(state.isoCode);
                                     }
-                                    
+
                                 })
-                                console.log(stateData)
+                                
                             }
                         }}
                         getOptionLabel={(obj) => `${obj.name}`}
@@ -238,7 +306,7 @@ const UserSignup = () => {
                             </Box>
                         )}
                         renderInput={(params) =>
-                            <TextField {...params} label="Select State" style={{ backgroundColor: "white" }} required />
+                            <TextField {...params} label="Select State" style={{ backgroundColor: "white" }} required error={state===''?true:false}/>
                         }
                     />
                     <Autocomplete
@@ -261,7 +329,7 @@ const UserSignup = () => {
                             </Box>
                         )}
                         renderInput={(params) =>
-                            <TextField {...params} label="Select City" style={{ backgroundColor: "white" }} required />
+                            <TextField {...params} label="Select City" style={{ backgroundColor: "white" }} required error={city===''?true:false} />
                         }
                     />
                     <Textfield
@@ -271,6 +339,7 @@ const UserSignup = () => {
                         type="number"
                         sx={{ width: 150, height: 50, margin: '10px' }}
                         onChange={(event) => { setZipcode(event.target.value) }}
+                        error={Zipcode === ''?true:false}
                     />
                     <TextField
                         required
@@ -278,7 +347,7 @@ const UserSignup = () => {
                         label="Address"
                         sx={{ width: '100%', height: 50, margin: '10px' }}
                         onChange={(event) => { setAddress(event.target.value) }}
-
+                        error={uAddress === ''?true:false}
                     />
                 </Address>
                 <Password>
@@ -297,6 +366,7 @@ const UserSignup = () => {
                                 </InputAdornment>
                             ),
                         }}
+                        error={password===''?true:false}
                     />
                     <TextField
                         sx={{ width: 180, height: 50, margin: '10px' }}
@@ -313,6 +383,8 @@ const UserSignup = () => {
                                 </InputAdornment>
                             ),
                         }}
+                        error={cpassword === ''?true:false}
+                        // helperText={cpassword ? 'confirm password is required' : ''}
                     />
                 </Password>
                 <Box>
@@ -328,8 +400,8 @@ const UserSignup = () => {
                     <LoginButton variant="contained" onClick={handleButton}>
                         Signup
                     </LoginButton>
-                    <br/>
-                    <Link to="/login" style={{color:"#d18356",textDecoration: "none"}}>Already have account? Login</Link>
+                    <br />
+                    <Link to="/login" style={{ color: "#d18356", textDecoration: "none" }}>Already have account? Login</Link>
                 </Box>
             </Paper>
         </Container>

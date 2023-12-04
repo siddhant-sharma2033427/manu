@@ -24,3 +24,14 @@ export const addProduct = async (req,res)=>{
         return  res.status(500).json({ msg: 'error occures user controller addUser',success:false })
     }
 }
+
+export const getProductDetails = async(req,res)=>{
+    try {
+        const data = await Products.findOne({_id:req.body.Id});
+        console.log(data,req.body.Id);
+        return res.status(200).json({data});
+    } catch (error) {
+
+        return  res.status(500).json({ msg: 'error occures user controller addUser',success:false })
+    }
+}
