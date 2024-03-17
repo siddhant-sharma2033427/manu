@@ -28,7 +28,7 @@ const Home = () => {
 
             <ScrollBar />
             <Banner />
-            <CarouselComp />
+            {/* <CarouselComp /> */}
             {/* setp 1 place order step 2 order pickup step 3 Order delivered */} frdge ac fan
         </>
     )
